@@ -7,5 +7,6 @@ const multerMiddleware = require('../middlewares/multer-middleware')
 const router = express.Router()
 
 router.post('/upload', authMiddleware, adminMiddleware, multerMiddleware, videoUploadController)
-router.get('/fetch', authMiddleware, adminMiddleware, getAllVideos)
+router.get('/fetch', authMiddleware, getAllVideos)
+
 module.exports = router;
