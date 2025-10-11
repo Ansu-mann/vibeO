@@ -35,8 +35,8 @@ const registerUser = async (req, res) => {
             })
         } else {
             return res.status(400).json({
-                success: true,
-                message: 'Unable to regiter user! Please try again',
+                success: false,
+                message: 'Unable to register user! Please try again',
             })
         }
     } catch (e) {
@@ -51,8 +51,19 @@ const registerUser = async (req, res) => {
 // login controller
 const loginUser = async (req, res) => {
     try {
-        const { username, password } = req.body;
-        const user = await User.findOne({username});
+        let user
+
+        let { username, email, password } = req.body
+        if (username) {
+            user = await User.findOne({ username })
+        } else if (email) {
+            user = await User.findOne({ email })
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: `Please provide either username or email`
+            })
+        }
 
         if (!user) {
             return res.status(404).json({
