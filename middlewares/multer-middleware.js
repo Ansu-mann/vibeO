@@ -1,15 +1,7 @@
 const multer = require('multer')
-const path = require('path')
 
-// Setting storage
-const storage = multer.diskStorage({
-    destination: function (req, file, cb){
-        cb(null, './uploads')
-    },
-    filename: function (req, file, cb){
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
-    }
-})
+// Use memory storage for cloud deployment
+const storage = multer.memoryStorage()
 
 // Adding file filter function
 const checkFileFilter = (req, file, cb) => {
@@ -25,6 +17,6 @@ module.exports = multer({
     storage,
     fileFilter: checkFileFilter,
     limits: {
-        fileSize: 20 * 1024 * 1024   // 20MB
+        fileSize: 30 * 1024 * 1024   // 30MB
     }
 }).single('video')

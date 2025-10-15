@@ -1,6 +1,5 @@
 const Video = require('../models/Video')
 const uploadToCloud = require('../helpers/videoUpload')
-const fs = require('fs')
 
 const videoUploadController = async(req, res) => {
     try{
@@ -10,15 +9,15 @@ const videoUploadController = async(req, res) => {
                 message: `Please select a file to upload`
             })
         }
-        const {url, publicId} = await uploadToCloud(req.file.path);
+        
+        // Use buffer and original name for cloud upload
+        const {url, publicId} = await uploadToCloud(req.file.buffer, req.file.originalname);
 
         const newlyUpload = await Video.create({
             url,
             publicId,
             uploadedBy: req.userInfo.userId
         })
-
-        fs.unlinkSync(req.file.path)
 
         return (
             res.status(201).json({
@@ -29,6 +28,7 @@ const videoUploadController = async(req, res) => {
         )
         
     }catch(error){
+        console.error('Video upload error:', error);
         return res.status(500).json({
             success: false,
             message: 'Error uploading video. Please try again.'
