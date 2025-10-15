@@ -1,14 +1,25 @@
 const cloudinary = require('../config/cloudinary')
 
-const uploadToCloud = async(filePath) => {
+const uploadToCloud = async(fileBuffer, originalName) => {
     try{
-        const res = await cloudinary.uploader.upload(filePath, {
-            resource_type: "video"
+        return new Promise((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+                {
+                    resource_type: "video",
+                    public_id: `video_${Date.now()}_${originalName.split('.')[0]}`
+                },
+                (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve({
+                            url: result.secure_url,
+                            publicId: result.public_id
+                        });
+                    }
+                }
+            ).end(fileBuffer);
         });
-        return {
-            url: res.secure_url,
-            publicId: res.public_id
-        }
     }catch(error){
         console.error(`Error uploading to cloud! Please try again!`, error)
         throw error;
