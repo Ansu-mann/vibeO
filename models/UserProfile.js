@@ -21,6 +21,6 @@ const UserProfileSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.String,
         ref: User
     }
-})
+}, {timestamps: true})
 
 module.exports = mongoose.model('UserProfile', UserProfileSchema)
