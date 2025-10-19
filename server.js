@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth-routes')
 const homeRoutes = require('./routes/home-routes')
 const adminRoutes = require('./routes/admin-routes')
 const uploadRoutes = require('./routes/video-upload-routes')
+const userProfile = require('./routes/userProfile-routes')
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,6 +18,11 @@ process.on('uncaughtException', (err) => {
 
 process.on('unhandledRejection', (err) => {
     console.error('Unhandled Rejection:', err);
+    // Don't exit on MongoDB timeout errors
+    if (err.error && err.error.name === 'TimeoutError') {
+        console.log('MongoDB timeout - continuing...');
+        return;
+    }
     process.exit(1);
 });
 
@@ -44,6 +50,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/home', homeRoutes)
 app.use('/api', adminRoutes)
 app.use('/api/video', uploadRoutes)
+app.use('/api/user-profile', userProfile) // Temporarily disabled
 
 // Error handling middleware
 app.use((err, req, res, next) => {

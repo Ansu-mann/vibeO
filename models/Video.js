@@ -10,10 +10,22 @@ const VideoSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    uploadedBy: {
+    title: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    uploaderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: User
+    },
+    uploaderUserName: {
+        type: mongoose.Schema.Types.String,
+        ref: User
     }
-})
+}, { timestamps: true })
 
 module.exports = mongoose.model('Video', VideoSchema);

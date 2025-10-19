@@ -1,12 +1,12 @@
 const express = require('express')
 const authMiddleware = require('../middlewares/auth-middleware')
-const adminMiddleware = require('../middlewares/admin-middleware')
-const {videoUploadController, getAllVideos} = require('../controllers/videoUpload-controller')
+const {videoUploadController, getAllVideos, deleteVideoById} = require('../controllers/videoUpload-controller')
 const multerMiddleware = require('../middlewares/multer-middleware')
 
 const router = express.Router()
 
-router.post('/upload', authMiddleware, adminMiddleware, multerMiddleware, videoUploadController)
+router.post('/upload', authMiddleware, multerMiddleware, videoUploadController)
 router.get('/fetch', authMiddleware, getAllVideos)
+router.delete('/delete/:id', authMiddleware, deleteVideoById)
 
 module.exports = router;
