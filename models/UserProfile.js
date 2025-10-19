@@ -11,7 +11,7 @@ const UserProfileSchema = new mongoose.Schema({
     gender: {
         type: String,
         lowercase: true,
-        enum: ['male', 'female', "couldn't decide"]
+        enum: ['male', 'female']
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,

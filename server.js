@@ -50,7 +50,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/home', homeRoutes)
 app.use('/api', adminRoutes)
 app.use('/api/video', uploadRoutes)
-app.use('/api/user-profile', userProfile) // Temporarily disabled
+app.use('/api/user-profile', userProfile)
 
 // Error handling middleware
 app.use((err, req, res, next) => {

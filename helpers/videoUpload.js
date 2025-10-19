@@ -6,7 +6,14 @@ const uploadToCloud = async(fileBuffer, originalName) => {
             cloudinary.uploader.upload_stream(
                 {
                     resource_type: "video",
-                    public_id: `video_${Date.now()}_${originalName.split('.')[0]}`
+                    public_id: `video_${Date.now()}_${originalName.split('.')[0]}`,
+                    eager: [
+                        {
+                            format: "mp4",
+                            video_codec: "h264",
+                            audio_codec: "aac"
+                        }
+                    ]
                 },
                 (error, result) => {
                     if (error) {
