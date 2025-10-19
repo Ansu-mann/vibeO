@@ -11,8 +11,8 @@ const videoUploadController = async(req, res) => {
             })
         }
 
-        const title = req.params.title || '';
-        const description = req.params.description || '';
+        const title = req.body.title || '';
+        const description = req.body.description || '';
         const uploaderId = req.userInfo.userId;
         const uploaderUserName = req.userInfo.username;
         
