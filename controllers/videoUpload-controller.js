@@ -10,17 +10,29 @@ const videoUploadController = async(req, res) => {
                 message: `Please select a file to upload`
             })
         }
+
+        const title = req.params.title || '';
+        const description = req.params.description || '';
+        const uploaderId = req.userInfo.userId;
+        const uploaderUserName = req.userInfo.username;
         
         // Use buffer and original name for cloud upload
+        const startTimeToUpload = Date.now();
+
         const {url, publicId} = await uploadToCloud(req.file.buffer, req.file.originalname);
+
+        const endTimeToUpload = Date.now();
+        const uploadTime = endTimeToUpload - startTimeToUpload;
+        
+        console.log(`Video uploaded to cloud in ${uploadTime / 1000} sec`);
 
         const newlyUpload = await Video.create({
             url,
             publicId,
-            title: req.body.title,
-            description: req.body.description,
-            uploaderId: req.userInfo.userId,
-            uploaderUserName: req.userInfo.username
+            title,
+            description,
+            uploaderId,
+            uploaderUserName
         })
 
         return (
