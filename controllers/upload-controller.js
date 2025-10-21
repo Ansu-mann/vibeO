@@ -1,10 +1,11 @@
 const Video = require('../models/Video')
-const uploadToCloud = require('../helpers/videoUpload')
+const UserProfile = require('../models/UserProfile')
+const { uploadVideoToCloud, uploadImageToCloud} = require('../helpers/uploader')
 const cloudinary = require('../config/cloudinary')
 
-const videoUploadController = async(req, res) => {
-    try{
-        if(!req.file){
+const videoUploadController = async (req, res) => {
+    try {
+        if (!req.file) {
             return res.status(400).json({
                 success: false,
                 message: `Please select a file to upload`
@@ -15,15 +16,15 @@ const videoUploadController = async(req, res) => {
         const description = req.body.description || '';
         const uploaderId = req.userInfo.userId;
         const uploaderUserName = req.userInfo.username;
-        
+
         // Use buffer and original name for cloud upload
         const startTimeToUpload = Date.now();
 
-        const {url, publicId} = await uploadToCloud(req.file.buffer, req.file.originalname);
+        const { url, publicId } = await uploadVideoToCloud(req.file.buffer, req.file.originalname);
 
         const endTimeToUpload = Date.now();
         const uploadTime = endTimeToUpload - startTimeToUpload;
-        
+
         console.log(`Video uploaded to cloud in ${uploadTime / 1000} sec`);
 
         const newlyUpload = await Video.create({
@@ -42,8 +43,8 @@ const videoUploadController = async(req, res) => {
                 newlyUpload
             })
         )
-        
-    }catch(error){
+
+    } catch (error) {
         console.error('Video upload error:', error);
         return res.status(500).json({
             success: false,
@@ -52,14 +53,14 @@ const videoUploadController = async(req, res) => {
     }
 }
 
-const getAllVideos = async(req, res) => {
-    try{
+const getAllVideos = async (req, res) => {
+    try {
         const videosFromDB = await Video.find()
         return res.status(200).json({
             success: true,
             data: videosFromDB
         })
-    }catch(error){
+    } catch (error) {
         console.error(`Error fetching the videos`, error)
         return res.status(500).json({
             success: false,
@@ -68,13 +69,13 @@ const getAllVideos = async(req, res) => {
     }
 }
 
-const deleteVideoById = async(req, res) => {
-    try{
+const deleteVideoById = async (req, res) => {
+    try {
         const getCurrentIdOfVideoToDelete = req.params.id;
         const userId = req.userInfo.userId
 
         const video = await Video.findById(getCurrentIdOfVideoToDelete);
-        if(!video){
+        if (!video) {
             return res.status(404).json({
                 success: false,
                 message: 'Video not found'
@@ -82,7 +83,7 @@ const deleteVideoById = async(req, res) => {
         }
 
         // check if any other user is trying to delete
-        if(video.uploaderId.toString() !== userId){
+        if (video.uploaderId.toString() !== userId) {
             return res.status(403).json({
                 success: false,
                 message: 'Only the owner can delete the video !'
@@ -90,7 +91,7 @@ const deleteVideoById = async(req, res) => {
         }
 
         // delete the video from cloudinary
-        await cloudinary.uploader.destroy(video.publicId, {resource_type: 'video'})
+        await cloudinary.uploader.destroy(video.publicId, { resource_type: 'video' })
 
         // delete from mongoDB
         await Video.findByIdAndDelete(getCurrentIdOfVideoToDelete)
@@ -99,7 +100,7 @@ const deleteVideoById = async(req, res) => {
             success: true,
             message: 'Video delete successfully !'
         })
-    }catch(error){
+    } catch (error) {
         console.error(`Error deleting the video`, error)
         return res.status(500).json({
             success: false,
@@ -108,4 +109,51 @@ const deleteVideoById = async(req, res) => {
     }
 }
 
-module.exports = {videoUploadController, getAllVideos, deleteVideoById}
+const updateUserProfile_and_Picture = async(req, res) => {
+    try {
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: `Please select a photo to upload`
+            })
+        }
+
+        const {url, publicId} = await uploadImageToCloud(req.file.buffer, req.file.originalname)
+
+        const name = req.body.name || '';
+        const bio = req.body.bio || '';
+        const gender = req.body.gender || '';
+        const userId = req.userInfo.userId;
+        const userName = req.userInfo.username;
+
+        const user = await UserProfile.findOne({ userId: userId });
+
+        let UserProfileData;
+
+        if (user) {
+            UserProfileData = await UserProfile.findByIdAndUpdate(user.id, {
+                name, bio, gender, userId, userName, profilePhotoUrl: url, profilePhotoPublicId: publicId
+            }, { new: true });
+        } else {
+            UserProfileData = await UserProfile.create({
+                name, bio, gender, userId, userName, profilePhotoUrl: url, profilePhotoPublicId: publicId
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'User details updated successfully',
+            UserProfileData
+        })
+
+    } catch (error) {
+        console.error('Unable to upload profile picture, from uploadProfilePicture');
+        return res.status(500).json({
+            success: false,
+            message: 'Unable to upload profile picture'
+        })
+    }
+}
+
+module.exports = { videoUploadController, getAllVideos, deleteVideoById, updateUserProfile_and_Picture }
