@@ -20,6 +20,14 @@ const UserProfileSchema = new mongoose.Schema({
     userName: {
         type: mongoose.Schema.Types.String,
         ref: User
+    },
+    profilePhotoUrl: {
+        type: String,
+        required: true
+    },
+    profilePhotoPublicId: {
+        type: String,
+        required: true
     }
 }, {timestamps: true})
 
