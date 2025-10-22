@@ -3,9 +3,7 @@ const UserProfile = require('../models/UserProfile');
 const updateUserProfile = async (req, res) => {
 
     try {
-        const name = req.body.name || '';
-        const bio = req.body.bio || '';
-        const gender = req.body.gender || '';
+        const {name, bio, gender} = req.body;
         const userId = req.userInfo.userId;
         const userName = req.userInfo.username;
 
