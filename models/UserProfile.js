@@ -22,12 +22,10 @@ const UserProfileSchema = new mongoose.Schema({
         ref: User
     },
     profilePhotoUrl: {
-        type: String,
-        required: true
+        type: String
     },
     profilePhotoPublicId: {
-        type: String,
-        required: true
+        type: String
     }
 }, {timestamps: true})
 

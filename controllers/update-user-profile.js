@@ -3,21 +3,22 @@ const UserProfile = require('../models/UserProfile');
 const updateUserProfile = async (req, res) => {
 
     try {
-        const {name, bio, gender} = req.body;
+        const { name, bio, gender } = req.body;
         const userId = req.userInfo.userId;
         const userName = req.userInfo.username;
+
 
         const user = await UserProfile.findOne({ userId: userId });
 
         let UserProfileData;
 
         if (user) {
-            UserProfileData = await UserProfile.findByIdAndUpdate(user.id, { 
-                name, bio, gender, userId, userName 
+            UserProfileData = await UserProfile.findByIdAndUpdate(user.id, {
+                name, bio, gender, userId, userName
             }, { new: true });
         } else {
             UserProfileData = await UserProfile.create({
-                name, bio, gender, userId, userName
+                name, bio, gender, userId, userName, profilePhotoUrl: '', profilePhotoPublicId: ''
             });
         }
 
