@@ -1,26 +1,45 @@
-const UserProfile = require('../models/UserProfile');
+const User = require('../models/User');
 
 const updateUserProfile = async (req, res) => {
 
     try {
-        const { name, bio, gender } = req.body;
+        let { fullname, bio, gender, username } = req.body;
         const userId = req.userInfo.userId;
-        const userName = req.userInfo.username;
+        username = username?.toLowerCase();
+        gender = gender?.toLowerCase();
 
+        const user = await User.findById(userId);
+        
+        if(!user){
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            })
+        }
 
-        const user = await UserProfile.findOne({ userId: userId });
+        try {
+            if (username && username !== user.username) {
+                const existingUser = await User.findOne({ username: username });
+                if (existingUser) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Username already taken! Please choose another one'
+                    })
+                }
+            }
+        } catch (error) {
+            console.error('Error checking username', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Error checking username'
+            })
+        }
 
         let UserProfileData;
 
-        if (user) {
-            UserProfileData = await UserProfile.findByIdAndUpdate(user.id, {
-                name, bio, gender, userId, userName
-            }, { new: true });
-        } else {
-            UserProfileData = await UserProfile.create({
-                name, bio, gender, userId, userName, profilePhotoUrl: '', profilePhotoPublicId: ''
-            });
-        }
+        UserProfileData = await User.findByIdAndUpdate(userId, {
+            fullname, bio, gender, username
+        }, { new: true });
 
         return res.status(200).json({
             success: true,
