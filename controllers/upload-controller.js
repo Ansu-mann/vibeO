@@ -1,5 +1,5 @@
-const Video = require('../models/Video')
-const UserProfile = require('../models/UserProfile')
+const Video = require('../models/Video');
+const User = require('../models/User');
 const { uploadVideoToCloud, uploadImageToCloud } = require('../helpers/uploader')
 const { updateUserProfile } = require('../controllers/update-user-profile')
 const cloudinary = require('../config/cloudinary')
@@ -119,37 +119,49 @@ const updateUserProfile_and_Picture = async (req, res) => {
             return updateUserProfile(req, res);
         }
 
-        const { name, bio, gender } = req.body;
+        let { fullname, bio, gender, username } = req.body;
+        username = username?.toLowerCase();
+        gender = gender?.toLowerCase();
         const userId = req.userInfo.userId;
-        const userName = req.userInfo.username;
 
-        const user = await UserProfile.findOne({ userId: userId });
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            })
+        }
 
+        if (username && username !== user.username) {
+            const existingUser = await User.findOne({ username });
+            if (existingUser) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Username already taken! Please choose another one'
+                })
+            }
+        }
+        
         //upload new profile photo
         const { url, publicId } = await uploadImageToCloud(req.file.buffer, req.file.originalname);
         newProfilePhotoId = publicId
 
         let UserProfileData, oldProfilePhotoId;
 
-        if (user) {
-            //store existing profile photo
-            oldProfilePhotoId = user.profilePhotoPublicId
+        //store existing profile photo
+        oldProfilePhotoId = user.profilePhotoPublicId
 
-            UserProfileData = await UserProfile.findByIdAndUpdate(user.id, {
-                name, bio, gender, userId, userName, profilePhotoUrl: url, profilePhotoPublicId: publicId
-            }, { new: true });
+        UserProfileData = await User.findByIdAndUpdate(userId, {
+            fullname, bio, gender, username, profilePhotoUrl: url, profilePhotoPublicId: publicId
+        }, { new: true });
 
+        if (oldProfilePhotoId) {
             try {
                 // delete existing profile photo using the stored value
                 await cloudinary.uploader.destroy(oldProfilePhotoId);
             } catch (error) {
                 console.error('Failed to delete old photo !');
             }
-
-        } else {
-            UserProfileData = await UserProfile.create({
-                name, bio, gender, userId, userName, profilePhotoUrl: url, profilePhotoPublicId: publicId
-            });
         }
 
         return res.status(200).json({
